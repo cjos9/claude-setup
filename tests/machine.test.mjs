@@ -29,6 +29,18 @@ test("the per-distro WSL probe may take long enough for a cold start", () => {
   assert.ok(timeouts["wsl.exe -d Dev"] >= 30000, `probe timeout ${timeouts["wsl.exe -d Dev"]}`);
 });
 
+test("the tool lookup may take long enough for a cold start on every system", () => {
+  for (const platform of ["win32", "darwin", "linux"]) {
+    const timeouts = [];
+    const run = (file, args, options = {}) => {
+      if (["where", "which", "sh"].includes(file)) timeouts.push(options.timeoutMs);
+      return { ok: false, stdout: "" };
+    };
+    detectMachine({ platform, arch: "x64", release: "1", run, osRelease: () => "" });
+    assert.ok(timeouts.length > 0 && timeouts.every((ms) => ms >= 30000), `${platform}: ${timeouts}`);
+  }
+});
+
 const WINDOWS_WITH_WSL = fakeRun({
   "where git": "C:\\Program Files\\Git\\cmd\\git.exe\r\n",
   "where node": "C:\\nvm4w\\nodejs\\node.exe\r\n",
