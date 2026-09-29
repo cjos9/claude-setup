@@ -12,6 +12,9 @@ const FORGE_CLIS = ["gh", "glab"];
 const PROBE_TIMEOUT_MS = 5000;
 // The first command in a distro may have to start it (measured: 4.3 s warm VM, longer after boot).
 const WSL_PROBE_TIMEOUT_MS = 30000;
+// A cold `where` on Windows can take longer than a probe (measured: over 5 s on a fresh CI runner);
+// a tool that is not there answers at once, so waiting costs nothing.
+const LOOKUP_TIMEOUT_MS = 30000;
 // `auth status` asks the forge's API whether each token still works.
 const AUTH_TIMEOUT_MS = 15000;
 // On these hosts only the user's own namespace is theirs; any other host is a company's own instance.
@@ -29,9 +32,10 @@ const MACOS_STUBS = ["/usr/bin/git", "/usr/bin/python3"];
 // `where` on Windows, `which` on macOS, the shell's `command -v` on Linux, where `which` is not always
 // installed. The Microsoft Store alias in WindowsApps is not a real tool.
 function lookup(tool, platform, run) {
-  if (platform === "win32") return run("where", [tool]);
-  if (platform === "darwin") return run("which", [tool]);
-  return run("sh", ["-c", 'command -v "$1"', "sh", tool]);
+  const options = { timeoutMs: LOOKUP_TIMEOUT_MS };
+  if (platform === "win32") return run("where", [tool], options);
+  if (platform === "darwin") return run("which", [tool], options);
+  return run("sh", ["-c", 'command -v "$1"', "sh", tool], options);
 }
 
 export function onPath(tool, { platform = process.platform, run = defaultRun } = {}) {
