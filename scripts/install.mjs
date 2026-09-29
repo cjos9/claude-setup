@@ -220,8 +220,10 @@ export function main(argv, { home = os.homedir(), cwd = process.cwd(), log = con
     const stateDir = path.join(claudeDir, "claude-setup");
     const configFile = path.join(stateDir, "config.json");
     const config = readJson(configFile);
+    // Every install writes its imports into CLAUDE.md as its last step, so an install that stopped
+    // early still leaves a first install behind.
     const claudeMdFile = path.join(claudeDir, "CLAUDE.md");
-    const firstInstall = !fs.existsSync(stateDir) && !(fs.existsSync(claudeMdFile) && hasSetupImports(fs.readFileSync(claudeMdFile, "utf8")));
+    const firstInstall = !(fs.existsSync(claudeMdFile) && hasSetupImports(fs.readFileSync(claudeMdFile, "utf8")));
     const profile = args.profile ? resolveProfile(args.profile, cwd) : config.profile ?? null;
     if (profile && !fs.existsSync(profile)) throw new UserError(`The profile ${profile} does not exist. Pass --profile <dir> again.`);
     if (args.pull) {

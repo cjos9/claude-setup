@@ -133,6 +133,20 @@ test("on a machine that never ran the installer, the user's own autoMode entries
   assert.deepEqual(autoMode.allow, ["Running the linters"]);
 });
 
+test("a first install that stopped on a broken settings.json is still a first install on the next run", (t) => {
+  const box = sandbox(t);
+  const profile = copyProfile(t);
+  const settingsFile = path.join(box.home, ".claude", "settings.json");
+  fs.mkdirSync(path.dirname(settingsFile), { recursive: true });
+  const own = { autoMode: { environment: ["Build server ci.example.com is trusted"] } };
+  fs.writeFileSync(settingsFile, `${JSON.stringify(own)},`);
+  assert.equal(box.run(["--profile", profile]).status, 1);
+  fs.writeFileSync(settingsFile, JSON.stringify(own));
+  const result = box.run([]);
+  assert.equal(result.status, 0, result.stderr);
+  assert.ok(box.json("settings.json").autoMode.environment.includes("Build server ci.example.com is trusted"));
+});
+
 test("the first install names the user's values it replaced, later installs do not", (t) => {
   const box = sandbox(t);
   fs.mkdirSync(path.join(box.home, ".claude"), { recursive: true });
