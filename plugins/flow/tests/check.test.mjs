@@ -260,6 +260,29 @@ test("unpushed commits on the default branch run the check, pushed ones do not",
   assert.equal(s.calls.length, 1);
 });
 
+test("without origin/HEAD, origin/main is the base for unpushed commits", async (t) => {
+  const repo = repoWithFlow(t);
+  repo.git("update-ref", "refs/remotes/origin/main", "HEAD");
+  repo.write("src/a.cs", "broken");
+  repo.git("add", ".");
+  repo.git("commit", "-q", "-m", "a");
+  const s = spy(red);
+  assert.equal(JSON.parse(await evaluateStop({ cwd: repo.dir }, { run: s.run })).decision, "block");
+});
+
+test("a stale local main does not count upstream changes as the branch's own", async (t) => {
+  const repo = repoWithFlow(t);
+  repo.git("switch", "-q", "-c", "upstream");
+  repo.write("src/up.cs", "class Up {}");
+  repo.git("add", ".");
+  repo.git("commit", "-q", "-m", "upstream change");
+  repo.git("update-ref", "refs/remotes/origin/main", "HEAD");
+  repo.git("switch", "-q", "-c", "feat/x", "origin/main");
+  const s = spy(red);
+  assert.equal(await evaluateStop({ cwd: repo.dir }, { run: s.run }), null);
+  assert.equal(s.calls.length, 0);
+});
+
 test("a file renamed away from a checkOn suffix in a commit still runs the check", async (t) => {
   const repo = repoWithFlow(t);
   repo.write("src/Foo.cs", "class Foo {}");

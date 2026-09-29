@@ -80,10 +80,11 @@ export function matchesCheckOn(file, checkOn) {
   return checkOn.some((suffix) => lower.endsWith(String(suffix).toLowerCase()));
 }
 
-// Where the branch's work starts: the merge base with origin's default branch as the clone knows it,
-// else with a local main or master. null without one (for example before the first commit).
+// Where the branch's work starts: the merge base with origin's default branch as the clone knows it
+// (origin/HEAD, else origin/main or origin/master), and only without those with a local main or
+// master, which may be stale. null without one (for example before the first commit).
 export function workBase(root) {
-  const refs = ["refs/heads/main", "refs/heads/master"];
+  const refs = ["refs/remotes/origin/main", "refs/remotes/origin/master", "refs/heads/main", "refs/heads/master"];
   try {
     refs.unshift(git(root, ["symbolic-ref", "--quiet", "refs/remotes/origin/HEAD"]).trim());
   } catch {
