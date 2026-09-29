@@ -12,6 +12,7 @@ A generic Claude Code setup for Windows, macOS and Linux: `template/` (settings 
 
 - Hooks and installer are dependency-free Node ESM. Hook errors must fail open (exit 0, no stdout). guard-push answers `ask`, protect-files `deny`, check-on-stop blocks with `{"decision":"block"}`.
 - Every guard change gets a test in `plugins/flow/tests`; each bypass found so far is pinned there.
+- guard-push catches mistakes in commands as Claude writes them, not deliberate evasion. Pushes through shell expansion (`eval`, variables, `xargs`, piping into a shell), git aliases or scripts are left to auto mode's classifier and the forge's branch protection: don't grow the parser for them.
 - Nothing personal in this repository: no personal profiles (only `profiles/example`), no user names, distros, versions, projects or hosts in `template/`, `plugins/`, `scripts/` or tests. Machine facts, forges and accounts come from `scripts/lib/machine.mjs`.
 - Profiles hold lasting personal preferences only: no repository names, hosts, accounts, versions or temporary facts (pinned in `tests/layout.test.mjs` for the example).
 - Code must run on Windows, macOS and Linux; inject the platform in tests instead of reading `process.platform`.
