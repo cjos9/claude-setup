@@ -230,6 +230,48 @@ test("renaming a file away from a checkOn suffix still runs the check", async (t
   assert.match(JSON.parse(out).reason, /flow check failed/);
 });
 
+test("changes committed on a branch still run the check", async (t) => {
+  const repo = repoWithFlow(t);
+  repo.git("switch", "-q", "-c", "feat/x");
+  repo.write("src/a.cs", "broken");
+  repo.git("add", ".");
+  repo.git("commit", "-q", "-m", "a");
+  const s = spy(red);
+  assert.equal(JSON.parse(await evaluateStop({ cwd: repo.dir }, { run: s.run })).decision, "block");
+  assert.equal(s.calls.length, 1);
+});
+
+test("unpushed commits on the default branch run the check, pushed ones do not", async (t) => {
+  const repo = repoWithFlow(t);
+  const pushed = () => {
+    repo.git("update-ref", "refs/remotes/origin/main", "HEAD");
+    repo.git("symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main");
+  };
+  pushed();
+  repo.write("src/a.cs", "broken");
+  repo.git("add", ".");
+  repo.git("commit", "-q", "-m", "a");
+  const s = spy(red);
+  assert.equal(JSON.parse(await evaluateStop({ cwd: repo.dir }, { run: s.run })).decision, "block");
+  pushed();
+  repo.git("commit", "-q", "--allow-empty", "-m", "b");
+  pushed();
+  assert.equal(await evaluateStop({ cwd: repo.dir }, { run: s.run }), null);
+  assert.equal(s.calls.length, 1);
+});
+
+test("a file renamed away from a checkOn suffix in a commit still runs the check", async (t) => {
+  const repo = repoWithFlow(t);
+  repo.write("src/Foo.cs", "class Foo {}");
+  repo.git("add", ".");
+  repo.git("commit", "-q", "-m", "foo");
+  repo.git("switch", "-q", "-c", "feat/x");
+  repo.git("mv", "src/Foo.cs", "src/Foo.txt");
+  repo.git("commit", "-q", "-m", "rename");
+  const s = spy(red);
+  assert.equal(JSON.parse(await evaluateStop({ cwd: repo.dir }, { run: s.run })).decision, "block");
+});
+
 test("a check killed from outside is reported as terminated, not as code null", async (t) => {
   const repo = repoWithFlow(t);
   repo.write("a.cs", "x");

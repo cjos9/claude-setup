@@ -80,9 +80,31 @@ export function matchesCheckOn(file, checkOn) {
   return checkOn.some((suffix) => lower.endsWith(String(suffix).toLowerCase()));
 }
 
+// Where the branch's work starts: the merge base with origin's default branch as the clone knows it,
+// else with a local main or master. null without one (for example before the first commit).
+export function workBase(root) {
+  const refs = ["refs/heads/main", "refs/heads/master"];
+  try {
+    refs.unshift(git(root, ["symbolic-ref", "--quiet", "refs/remotes/origin/HEAD"]).trim());
+  } catch {
+    // No remote named origin, or it has no HEAD.
+  }
+  for (const ref of refs) {
+    try {
+      return git(root, ["merge-base", "HEAD", ref]).trim();
+    } catch {
+      // The ref does not exist or shares no history with HEAD.
+    }
+  }
+  return null;
+}
+
+// Uncommitted files plus the files the branch's commits changed; a rename counts as both paths.
 export function relevantChanges(root, checkOn) {
-  const status = git(root, ["status", "--porcelain=v1", "-z", "--untracked-files=all"]);
-  return changedPaths(status).filter((file) => file !== STATE_FILE && matchesCheckOn(file, checkOn));
+  const paths = changedPaths(git(root, ["status", "--porcelain=v1", "-z", "--untracked-files=all"]));
+  const base = workBase(root);
+  if (base) paths.push(...git(root, ["diff", "--name-only", "--no-renames", "-z", base, "HEAD"]).split("\0").filter(Boolean));
+  return [...new Set(paths)].filter((file) => file !== STATE_FILE && matchesCheckOn(file, checkOn));
 }
 
 // Hashes the check configuration, HEAD and the content of every relevant changed file, so untracked
