@@ -232,6 +232,8 @@ On the other machines: `git pull` in the profile repository, then run the instal
 
 The secret rules do not cover a script or program that opens a file itself. To enforce them at the operating system level, enable Claude Code's sandbox with `/sandbox` (macOS, Linux and WSL2; not native Windows).
 
+The push guard reads a command as it is written: a push through a variable, `eval`, a git alias or a script is left to auto mode's classifier. To enforce the push rules on the server, protect the default branch on your forge (on GitHub with a ruleset; private repositories need a paid plan for it).
+
 ### `.claude/flow.json`
 
 | Key | Meaning |
