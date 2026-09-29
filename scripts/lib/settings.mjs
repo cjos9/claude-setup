@@ -155,6 +155,18 @@ export function keepOwnAutoMode(user, managed, previous) {
   return { ...managed, autoMode };
 }
 
+// Dotted paths of the user's scalar values that `next` changes or drops. Lists are left out: installs
+// only add to them.
+export function replacedValues(user, next, prefix = "") {
+  const paths = [];
+  for (const [key, value] of Object.entries(user ?? {})) {
+    const at = `${prefix}${key}`;
+    if (isObject(value)) paths.push(...replacedValues(value, isObject(next?.[key]) ? next[key] : {}, `${at}.`));
+    else if (!Array.isArray(value) && !deepEqual(value, next?.[key])) paths.push(at);
+  }
+  return paths;
+}
+
 export function changedKeys(before, after) {
   const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
   return [...keys].filter((key) => !deepEqual(before[key], after[key]));

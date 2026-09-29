@@ -120,6 +120,33 @@ test("the old installer's import and personal host line are replaced", (t) => {
   assert.equal(settings.autoMode.environment.some((line) => line.startsWith("Host containment")), false);
 });
 
+test("on a machine that never ran the installer, the user's own autoMode entries stay", (t) => {
+  const box = sandbox(t);
+  fs.mkdirSync(path.join(box.home, ".claude"), { recursive: true });
+  fs.writeFileSync(path.join(box.home, ".claude", "settings.json"), JSON.stringify({
+    autoMode: { environment: ["$defaults", "Build server ci.example.com is trusted"], allow: ["Running the linters"] },
+  }));
+  const result = box.run([]);
+  assert.equal(result.status, 0, result.stderr);
+  const autoMode = box.json("settings.json").autoMode;
+  assert.deepEqual(autoMode.environment, ["$defaults", MAC_LINE, "Build server ci.example.com is trusted"]);
+  assert.deepEqual(autoMode.allow, ["Running the linters"]);
+});
+
+test("the first install names the user's values it replaced, later installs do not", (t) => {
+  const box = sandbox(t);
+  fs.mkdirSync(path.join(box.home, ".claude"), { recursive: true });
+  fs.writeFileSync(path.join(box.home, ".claude", "settings.json"), JSON.stringify({
+    theme: "dark", statusLine: { type: "command", command: "my-status" }, permissions: { defaultMode: "default", allow: ["Bash(ls)"] },
+  }));
+  const first = box.run([]);
+  assert.equal(first.status, 0, first.stderr);
+  assert.match(first.stdout, /Replaced your values: statusLine\.command, permissions\.defaultMode\. The previous settings\.json is in .*backups/);
+  assert.equal(box.json("settings.json").theme, "dark");
+  assert.deepEqual(box.json("settings.json").permissions.allow, ["Bash(ls)"]);
+  assert.doesNotMatch(box.run([]).stdout, /Replaced your values/);
+});
+
 test("--pull writes changes into the profile and never touches the template", (t) => {
   const box = sandbox(t);
   const profile = copyProfile(t);
