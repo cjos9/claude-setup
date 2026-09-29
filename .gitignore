@@ -1,0 +1,4 @@
+node_modules/
+.claude/settings.local.json
+.claude/.flow-state.json
+.claude/worktrees/

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "statusLine": {
+    "type": "command",
+    "command": "node \"${REPO}/template/statusline.mjs\""
+  },
+  "permissions": {
+    "defaultMode": "auto",
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(*.pfx)",
+      "Read(*.p12)",
+      "Read(*.key)",
+      "Read(*.pem)",
+      "Read(id_rsa*)",
+      "Read(id_ed25519*)",
+      "Read(id_ecdsa*)",
+      "Read(id_dsa*)",
+      "Read(!*.example)",
+      "Read(!*.sample)",
+      "Read(!*.template)",
+      "Read(!*.dist)",
+      "Read(!*.pub)",
+      "Read(~/.ssh/id_*)",
+      "Read(~/.claude/.credentials.json)"
+    ]
+  },
+  "autoMode": {
+    "environment": ["$defaults"]
+  },
+  "enabledPlugins": {
+    "context7@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "flow@claude-setup": true
+  }
+}

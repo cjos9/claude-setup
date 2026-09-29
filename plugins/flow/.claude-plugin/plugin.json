@@ -1,0 +1,6 @@
+{
+  "name": "flow",
+  "description": "Workflow for Claude Code: guards for pushes and secrets, a build check before Claude stops, desktop notifications, and the setup-project, ship and wsl skills.",
+  "author": { "name": "claude-setup" },
+  "license": "MIT"
+}
