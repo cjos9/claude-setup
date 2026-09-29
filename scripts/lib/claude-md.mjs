@@ -9,6 +9,9 @@ const LEGACY_IMPORT = /^@\S*\/claude-setup\/user\/CLAUDE\.md$/;
 
 const posix = (file) => file.replace(/\\/g, "/");
 
+// Every installer so far left its imports in CLAUDE.md: the managed block, or the first one's import line.
+export const hasSetupImports = (text) => text.includes(BEGIN) || text.split(/\r?\n/).some((line) => LEGACY_IMPORT.test(line.trim()));
+
 export function importLine(file, home) {
   const full = posix(file);
   const base = posix(home).replace(/\/+$/, "");

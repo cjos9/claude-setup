@@ -6,14 +6,14 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { importLine, importTarget, updateManagedBlock } from "./lib/claude-md.mjs";
+import { hasSetupImports, importLine, importTarget, updateManagedBlock } from "./lib/claude-md.mjs";
 import {
   detectMachine, forgesLine, machineEnvironmentLine, machineEnvironmentLines, missingToolMessage, onPath, renderMachineMd, toolsLine,
 } from "./lib/machine.mjs";
 import { ensureMarketplace, ensurePluginMarketplaces, installMissing, isInstalled, pluginIds, refreshPlugin } from "./lib/plugins.mjs";
 import {
   changedKeys, deepEqual, dropStaleListEntries, dropStaleProfileKeys, keepOwnAutoMode, layerSettings, managedLists,
-  mergeIntoUser, pullToProfile, resolvePlaceholders, unresolvePlaceholders,
+  mergeIntoUser, pullToProfile, replacedValues, resolvePlaceholders, unresolvePlaceholders,
 } from "./lib/settings.mjs";
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -35,6 +35,9 @@ const UNRECORDED_LISTS = {
     "Bash(git push -f *)",
   ],
 };
+// A machine that never ran the installer: the last install put nothing into settings.json, so every
+// entry there is the user's own.
+const NOTHING_INSTALLED = { profile: null, keys: [], values: {}, lists: {}, autoMode: {}, plugins: {} };
 
 class UserError extends Error {}
 
@@ -105,6 +108,7 @@ function backup(claudeDir, log) {
   const all = fs.readdirSync(backups).filter((name) => name.startsWith("claude-setup-")).sort();
   for (const old of all.slice(0, Math.max(0, all.length - KEEP_BACKUPS))) fs.rmSync(path.join(backups, old), { recursive: true, force: true });
   log(`Backup: ${target}`);
+  return target;
 }
 
 function machineFacts(stateDir) {
@@ -216,6 +220,10 @@ export function main(argv, { home = os.homedir(), cwd = process.cwd(), log = con
     const stateDir = path.join(claudeDir, "claude-setup");
     const configFile = path.join(stateDir, "config.json");
     const config = readJson(configFile);
+    // Every install writes its imports into CLAUDE.md as its last step, so an install that stopped
+    // early still leaves a first install behind.
+    const claudeMdFile = path.join(claudeDir, "CLAUDE.md");
+    const firstInstall = !(fs.existsSync(claudeMdFile) && hasSetupImports(fs.readFileSync(claudeMdFile, "utf8")));
     const profile = args.profile ? resolveProfile(args.profile, cwd) : config.profile ?? null;
     if (profile && !fs.existsSync(profile)) throw new UserError(`The profile ${profile} does not exist. Pass --profile <dir> again.`);
     if (args.pull) {
@@ -230,7 +238,7 @@ export function main(argv, { home = os.homedir(), cwd = process.cwd(), log = con
     const user = readSettings(settingsFile);
     layers(profile, null);
 
-    backup(claudeDir, log);
+    const backupDir = backup(claudeDir, log);
     const machine = machineFacts(stateDir);
     const { template, profileSettings, machineLines } = layers(profile, machine);
     log(`Machine: ${machineEnvironmentLine(machine)}`);
@@ -239,9 +247,11 @@ export function main(argv, { home = os.homedir(), cwd = process.cwd(), log = con
     const managed = layerSettings(template, profileSettings, machineLines);
     if (args.plugins) plugins({ claudeDir, managed, log });
 
-    const previous = readJson(path.join(stateDir, INSTALLED), null);
+    const previous = readJson(path.join(stateDir, INSTALLED), null) ?? (firstInstall ? NOTHING_INSTALLED : null);
     const current = dropStaleListEntries(dropStaleProfileKeys(user, previous, managed), previousLists(previous), managed);
     const next = mergeIntoUser(current, keepOwnAutoMode(user, managed, previous));
+    const replaced = firstInstall ? replacedValues(user, next) : [];
+    if (replaced.length > 0) log(`Replaced your values: ${replaced.join(", ")}. The previous settings.json is in ${backupDir}.`);
     const changed = changedKeys(user, next);
     if (changed.length === 0) log("settings.json already up to date");
     else {

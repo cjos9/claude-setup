@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   changedKeys, dropStaleListEntries, dropStaleProfileKeys, keepOwnAutoMode, layerSettings, managedLists, mergeIntoUser,
-  pullToProfile, resolvePlaceholders, unresolvePlaceholders,
+  pullToProfile, replacedValues, resolvePlaceholders, unresolvePlaceholders,
 } from "../scripts/lib/settings.mjs";
 
 const template = {
@@ -196,4 +196,18 @@ test("--pull does not take a plugin the last install enabled from the template f
 test("the managed permission lists are recorded for the next install", () => {
   assert.deepEqual(managedLists(layerSettings(template, profile)), { deny: ["Read(.env)", "Read(*.key)", "Read(secrets/**)"] });
   assert.deepEqual(managedLists({ model: "x" }), {});
+});
+
+test("replacedValues names changed scalars and lists that lost entries, not lists that only grew", () => {
+  const user = {
+    theme: "dark", model: "sonnet",
+    permissions: { defaultMode: "default", allow: ["Bash(ls)"] },
+    hooks: { PreToolUse: [{ matcher: "Bash" }] },
+  };
+  const next = {
+    theme: "dark", model: "opus",
+    permissions: { defaultMode: "auto", allow: ["Bash(ls)", "Bash(git status)"] },
+    hooks: { Stop: [{ matcher: "" }] },
+  };
+  assert.deepEqual(replacedValues(user, next), ["model", "permissions.defaultMode", "hooks.PreToolUse"]);
 });

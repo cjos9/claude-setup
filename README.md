@@ -82,7 +82,7 @@ macOS and Linux (Terminal):
 ./install.sh --profile ../claude-profile
 ```
 
-The installer backs up `~/.claude/settings.json` and `~/.claude/CLAUDE.md` to `~/.claude/backups/` (the 10 newest stay), detects the machine, registers the plugin marketplaces, installs missing plugins, merges the settings, imports the instructions and runs your profile's `setup.mjs`. Permission entries that an earlier install added and no layer provides any more are removed; entries you added yourself stay. It remembers the profile, so later runs need no arguments. A relative `--profile` path is looked up in the current folder first, then in the repository.
+The installer backs up `~/.claude/settings.json` and `~/.claude/CLAUDE.md` to `~/.claude/backups/` (the 10 newest stay), detects the machine, registers the plugin marketplaces, installs missing plugins, merges the settings, imports the instructions and runs your profile's `setup.mjs`. Permission entries that an earlier install added and no layer provides any more are removed; entries you added yourself stay. On a machine that already has its own `settings.json`, the first install keeps your permission entries, plugins and auto mode entries, and names every value of yours it replaced (for example `statusLine.command`). It remembers the profile, so later runs need no arguments. A relative `--profile` path is looked up in the current folder first, then in the repository.
 
 Without `--profile`, only the template is installed.
 
