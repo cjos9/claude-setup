@@ -148,7 +148,7 @@ Claude creates a branch (`feat/…`, `fix/…`, `chore/…`) and implements the 
 
 While Claude works, the setup protects you:
 
-- **Stop check**: when relevant files changed, Claude cannot end its turn while `.claude/flow.json`'s `check` fails. It fixes the build or tells you why the failure is unrelated.
+- **Stop check**: when relevant files changed on the branch, committed or not, Claude cannot end its turn while `.claude/flow.json`'s `check` fails. It fixes the build or tells you why the failure is unrelated.
 - **Guards**: pushes to the default branch (`main`, `master` or the repository's own), tag pushes, force pushes, auto-merges and merges ask you first, also in auto mode. Approve only if you intend exactly that. Secrets (`.env`, keys) stay closed to Claude's file tools and shell file commands (see [What the guards do](#what-the-guards-do)).
 - **Notifications**: when Claude waits for you, a desktop notification appears.
 
@@ -228,7 +228,7 @@ On the other machines: `git pull` in the profile repository, then run the instal
 | Read or write `.env`, `.env.*` (except `*.example`, `*.sample`, `*.template`, `*.dist`), keys and certificates (`*.key`, `*.pem`, `*.pfx`, `*.p12`) and private SSH keys with Claude's file tools, or read them with a file command in Bash (`cat`, `head`, `tail`, …) | Denied |
 | Write into `.git/`, lockfiles, `*.sops.*`/`*.enc.*` files | Denied with a hint to the right tool |
 | Claude waits for you | Desktop notification "Claude Code · <project>" (Windows toast, macOS Notification Center, `notify-send` on Linux) |
-| Relevant files changed and `check` is red | Claude must keep working; each red state blocks once |
+| Relevant files changed (uncommitted, or committed since the branch left the default branch) and `check` is red | Claude must keep working; each red state blocks once |
 
 The secret rules do not cover a script or program that opens a file itself. To enforce them at the operating system level, enable Claude Code's sandbox with `/sandbox` (macOS, Linux and WSL2; not native Windows).
 
