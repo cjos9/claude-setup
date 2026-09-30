@@ -1,0 +1,6 @@
+{
+  "check": "node --test",
+  "checkOn": [".mjs", ".md", ".json"],
+  "test": "node --test && claude plugin validate . && claude plugin validate plugins/flow",
+  "timeoutSec": 300
+}
