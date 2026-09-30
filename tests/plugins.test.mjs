@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { ensureMarketplace, ensurePluginMarketplaces, installMissing, isInstalled, pluginIds, refreshPlugin } from "../scripts/lib/plugins.mjs";
+import {
+  ensureMarketplace, ensurePluginMarketplaces, installMissing, isInstalled, pluginIds, refreshPlugin, windowsCommandLine,
+} from "../scripts/lib/plugins.mjs";
 
 test("the official marketplace is registered when a fresh machine does not know it yet", () => {
   const calls = [];
@@ -67,4 +69,15 @@ test("refreshing reports the cached commit before and after", () => {
   const result = refreshPlugin({ run, readSha: () => shas.shift(), id: "flow@claude-setup", marketplace: "claude-setup" });
   assert.deepEqual(calls, ["plugin marketplace update claude-setup", "plugin update flow@claude-setup --scope user"]);
   assert.deepEqual(result, { before: "aaaaaaa", after: "bbbbbbb" });
+});
+
+test("on Windows every argument is quoted, so cmd.exe reads & ( ) and spaces as text", () => {
+  assert.equal(
+    windowsCommandLine(["claude", "plugin", "marketplace", "add", "C:\R&D (x86)\Jürgen setup"]),
+    '"claude" "plugin" "marketplace" "add" "C:\R&D (x86)\Jürgen setup"',
+  );
+});
+
+test("on Windows an argument cmd.exe would still interpret inside quotes is refused", () => {
+  for (const arg of ['a"b', "100%", "hi!", "a\nb", "C:\dir\\"]) assert.equal(windowsCommandLine(["claude", arg]), null, arg);
 });

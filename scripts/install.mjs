@@ -10,7 +10,9 @@ import { hasSetupImports, importLine, importTarget, updateManagedBlock } from ".
 import {
   detectMachine, forgesLine, machineEnvironmentLine, machineEnvironmentLines, missingToolMessage, onPath, renderMachineMd, toolsLine,
 } from "./lib/machine.mjs";
-import { ensureMarketplace, ensurePluginMarketplaces, installMissing, isInstalled, pluginIds, refreshPlugin } from "./lib/plugins.mjs";
+import {
+  ensureMarketplace, ensurePluginMarketplaces, installMissing, isInstalled, pluginIds, refreshPlugin, windowsCommandLine,
+} from "./lib/plugins.mjs";
 import {
   changedKeys, deepEqual, dropStaleListEntries, dropStaleProfileKeys, keepOwnAutoMode, layerSettings, managedLists,
   mergeIntoUser, pullToProfile, replacedValues, resolvePlaceholders, unresolvePlaceholders,
@@ -86,13 +88,16 @@ function writeJson(file, value) {
 }
 
 // The claude CLI is an .exe or a .cmd shim on Windows; the shell finds both. With a shell, Node wants
-// one command string (arguments next to shell: true are deprecated), so quote and join them here.
+// one command string (arguments next to shell: true are deprecated).
 function runClaude(args) {
-  const windows = process.platform === "win32";
-  const quote = (arg) => (/[\s"]/.test(arg) ? `"${arg.replace(/"/g, '\\"')}"` : arg);
-  const result = windows
-    ? spawnSync(["claude", ...args.map(quote)].join(" "), { encoding: "utf8", shell: true, windowsHide: true })
-    : spawnSync("claude", args, { encoding: "utf8", windowsHide: true });
+  let result;
+  if (process.platform === "win32") {
+    const line = windowsCommandLine(["claude", ...args]);
+    if (line === null) throw new UserError(`Cannot pass ${JSON.stringify(args)} to claude through cmd.exe: remove ", %, ! and trailing backslashes.`);
+    result = spawnSync(line, { encoding: "utf8", shell: true, windowsHide: true });
+  } else {
+    result = spawnSync("claude", args, { encoding: "utf8", windowsHide: true });
+  }
   return { ok: result.status === 0, stdout: `${result.stdout ?? ""}${result.stderr ?? ""}` };
 }
 

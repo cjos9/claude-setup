@@ -2,6 +2,14 @@
 // a failed command, the installer reports it.
 import path from "node:path";
 
+// On Windows the claude CLI may be a .cmd shim, which only runs through cmd.exe. Inside double quotes
+// cmd.exe reads everything as text except ", % and !; an argument with one of them, a line break or a
+// trailing backslash (which would escape the closing quote) is refused. null when one is refused.
+export function windowsCommandLine(args) {
+  if (args.some((arg) => /["%!\r\n]|\\$/.test(arg))) return null;
+  return args.map((arg) => `"${arg}"`).join(" ");
+}
+
 export function pluginIds(settings) {
   return Object.entries(settings.enabledPlugins ?? {}).filter(([, enabled]) => enabled).map(([id]) => id);
 }
