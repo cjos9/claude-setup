@@ -109,7 +109,7 @@ Do this once per repository, when you want Claude to know the project's commands
    - `CLAUDE.md`: exact build, test and lint commands, conventions and gotchas, and above all what deploys or publishes (merges to the default branch, tags, deploy jobs) and which hosts are production.
    - `.claude/settings.json`: an allowlist for harmless commands such as `dotnet build` or `npm run lint`.
    - `.claude/flow.json`: the `check` the stop hook runs, the `test` command `/flow:ship` runs, and `runIn` where needed (see [flow.json](#claudeflowjson)).
-3. Claude runs the check once. It must be green on the unchanged code.
+3. Claude runs the check and the test command once. The check must be green on the unchanged code, and the test run must find tests.
 4. Read the new `CLAUDE.md`. Correct anything wrong; it steers every future session.
 5. Run `/flow:ship` to open the pull or merge request, then merge it.
 

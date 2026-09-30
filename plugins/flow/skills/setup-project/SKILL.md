@@ -51,6 +51,7 @@ Append the missing lines to `.gitignore`:
 ## 6. Verify and commit
 
 - Run the `check` command once and show the result. If it fails on the unchanged code, tell the user the project was already red and do not commit a check that cannot pass.
+- Run the `test` command once. A run that finds zero tests is a wrong command, not a green one: fix it, or, if the CI's own command finds none either, tell the user instead of changing `global.json` or project files.
 - Show `git diff --stat` and the new CLAUDE.md.
 - Commit with `chore: set up Claude Code (CLAUDE.md, permissions, flow check)`, unless the project's CLAUDE.md sets other commit rules (subject case, scopes, no attribution lines): those win.
 - Tell the user that `/flow:ship` opens the pull or merge request.
