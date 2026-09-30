@@ -113,6 +113,8 @@ Do this once per repository, when you want Claude to know the project's commands
 4. Read the new `CLAUDE.md`. Correct anything wrong; it steers every future session.
 5. Run `/flow:ship` to open the pull or merge request, then merge it.
 
+If you skip this, the first `/flow:ship` in the repository does the same setup on its branch, in a commit of its own. It leaves it out for contributions to someone else's project, such as a fork.
+
 ## 4. The development workflow
 
 One task, from idea to merged pull request. "You" is the developer, "Claude" is Claude Code with this setup.
@@ -178,10 +180,11 @@ When the branch is done, Claude points you to `/flow:ship` instead of merging or
 You run `/flow:ship` (optionally with notes for the PR: `/flow:ship closes #12`). Claude then:
 
 1. Stops if you are on `main` and offers to move the work to a branch.
-2. Runs the project's `check` and `test` and keeps the results as evidence.
-3. Reviews the diff in a fresh context and fixes real findings; dismissed findings get a one-line reason.
-4. Commits with a Conventional Commit message and pushes the branch.
-5. Opens the pull request (GitHub) or merge request (GitLab; with `glab`, or through push options without it) with a summary, the verification evidence, the review results and your notes, and reports the CI status once. On other forges it pushes the branch and gives you the description.
+2. Sets the project up if it has no `.claude/flow.json` (see [Set up a project](#3-set-up-a-project)), in a commit of its own.
+3. Runs the project's `check` and `test` and keeps the results as evidence.
+4. Reviews the diff in a fresh context and fixes real findings; dismissed findings get a one-line reason.
+5. Commits with a Conventional Commit message and pushes the branch.
+6. Opens the pull request (GitHub) or merge request (GitLab; with `glab`, or through push options without it) with a summary, the verification evidence, the review results and your notes, and reports the CI status once. On other forges it pushes the branch and gives you the description.
 
 Claude never merges.
 

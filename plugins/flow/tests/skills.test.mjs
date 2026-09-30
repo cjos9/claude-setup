@@ -33,3 +33,16 @@ test("setup-project reads the CI of any forge", () => {
   const text = skill("setup-project");
   for (const needle of [".github/workflows", ".gitlab-ci.yml"]) assert.ok(text.includes(needle), needle);
 });
+
+test("ship sets a project without flow.json up through setup-project's steps, in a commit of its own", () => {
+  const text = skill("ship");
+  const reference = /\$\{CLAUDE_SKILL_DIR\}\/\.\.\/(setup-project)\/SKILL\.md/.exec(text);
+  assert.ok(reference, "ship points to setup-project's SKILL.md");
+  assert.ok(fs.existsSync(path.join(PLUGIN, "skills", reference[1], "SKILL.md")));
+  const steps = /steps (\d) to (\d)/.exec(text);
+  assert.ok(steps, "ship names the setup steps it follows");
+  const headings = [...skill("setup-project").matchAll(/^## (\d)\. (.+)$/gm)].map(([, number, title]) => [Number(number), title]);
+  const followed = headings.filter(([number]) => number >= Number(steps[1]) && number <= Number(steps[2])).map(([, title]) => title);
+  assert.deepEqual(followed, ["Learn the project", "Write CLAUDE.md", "Write .claude/settings.json and .claude/flow.json", "Ignore local files"]);
+  assert.ok(text.includes("chore: set up Claude Code"), "the setup gets its own commit");
+});
