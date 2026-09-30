@@ -30,6 +30,7 @@ Stacks this file does not cover: take build, test and lint commands from the CI 
   ```
 
 - `permissions.allow`: `Bash(dotnet restore *)`, `Bash(dotnet build *)`, `Bash(dotnet test *)`, `Bash(dotnet format *)`, `Bash(dotnet pack *)`, `Bash(dotnet list *)`.
+- Test projects that run only on Microsoft.Testing.Platform (TUnit, or xUnit v3 without `xunit.runner.visualstudio`; MSTest and NUnit runners fall back to VSTest): `dotnet test` finds their tests with the .NET 10 SDK or later only with `"test": { "runner": "Microsoft.Testing.Platform" }` in `global.json`, and with earlier SDKs only with `<TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>`. A repository built with both SDKs needs both.
 - Check for these gotchas: central package versions in `Directory.Packages.props`; MinVer or other tag-based versioning; Testcontainers tests that need Docker (on Windows run them with the `wsl` skill); application control (Smart App Control) blocking fresh test DLLs on Windows.
 
 ## Python (uv)

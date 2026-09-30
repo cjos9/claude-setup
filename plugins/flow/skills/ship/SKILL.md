@@ -30,7 +30,7 @@ If `.claude/flow.json` exists, go on with step 3. Otherwise the project was neve
 
 - Run `node "${CLAUDE_SKILL_DIR}/../../scripts/run-flow.mjs" check`, then `node "${CLAUDE_SKILL_DIR}/../../scripts/run-flow.mjs" test`. They run `.claude/flow.json`'s commands the way the stop hook does, including `"runIn": "linux"`. Without a flow.json, take the commands from the project CLAUDE.md; if there are none, ask.
 - On Windows, tests that need Docker, or that the machine's application control blocks (see machine.md), run through the `wsl` skill.
-- Keep the exact commands and their summary lines as evidence. A red result stops shipping: find the root cause before you change code (with superpowers:systematic-debugging if it is available) and fix it, or report it and stop.
+- Keep the exact commands and their summary lines as evidence. A red result, or a test run that found zero tests, stops shipping: find the root cause before you change code (with superpowers:systematic-debugging if it is available) and fix it, or report it and stop.
 
 ## 4. Review
 

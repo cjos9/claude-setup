@@ -4,7 +4,8 @@ A generic Claude Code setup for Windows, macOS and Linux: `template/` (settings 
 
 ## Commands
 
-- Tests: `node --test` in the repo root (CI runs them on Windows, macOS and Linux). Plugin check: `claude plugin validate plugins/flow`.
+- Tests: `node --test` in the repo root (CI runs them on Windows, macOS and Linux). Plugin check: `claude plugin validate .` (marketplace) and `claude plugin validate plugins/flow`. `.claude/flow.json`'s `test` runs both; its `check`, which the Stop hook runs, is `node --test` alone.
+- Release: no CI job publishes or deploys; machines pick up `main` through `git pull` and the installer.
 - Apply a change: commit, run `install.ps1` (Windows) or `./install.sh` (macOS, Linux); both call `scripts/install.mjs`, which merges settings and refreshes the cached plugin. Then restart Claude Code. Claude Code runs the plugin from a copy in `~/.claude/plugins/cache`, never from this folder.
 - Try plugin changes without installing: `claude --plugin-dir plugins/flow`.
 

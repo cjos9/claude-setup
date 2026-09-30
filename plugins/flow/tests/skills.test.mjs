@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const PLUGIN = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const skill = (name) => fs.readFileSync(path.join(PLUGIN, "skills", name, "SKILL.md"), "utf8");
+const skill = (name, file = "SKILL.md") => fs.readFileSync(path.join(PLUGIN, "skills", name, file), "utf8");
 
 test("skills call scripts that exist", () => {
   for (const name of ["ship", "setup-project"]) {
@@ -45,4 +45,20 @@ test("ship sets a project without flow.json up through setup-project's steps, in
   const followed = headings.filter(([number]) => number >= Number(steps[1]) && number <= Number(steps[2])).map(([, title]) => title);
   assert.deepEqual(followed, ["Learn the project", "Write CLAUDE.md", "Write .claude/settings.json and .claude/flow.json", "Ignore local files"]);
   assert.ok(text.includes("chore: set up Claude Code"), "the setup gets its own commit");
+});
+
+test("setup-project's .NET stack names both switches Microsoft.Testing.Platform needs for dotnet test", () => {
+  const stacks = skill("setup-project", "stacks.md");
+  const start = stacks.indexOf("## .NET");
+  const end = stacks.indexOf("\n## ", start + 1);
+  assert.ok(start >= 0 && end > start, "stacks.md has a .NET section followed by another");
+  const dotnet = stacks.slice(start, end);
+  for (const needle of ['"test": { "runner": "Microsoft.Testing.Platform" }', "<TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>"]) {
+    assert.ok(dotnet.includes(needle), needle);
+  }
+});
+
+test("setup-project and ship count a test run that finds zero tests as red", () => {
+  assert.ok(skill("setup-project").includes("A run that finds zero tests is a wrong command"), "setup-project");
+  assert.ok(skill("ship").includes("a test run that found zero tests, stops shipping"), "ship");
 });
