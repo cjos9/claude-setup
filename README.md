@@ -60,7 +60,7 @@ Fill in the files:
 
 | File | What to put in |
 | --- | --- |
-| `settings.json` | Only what differs from the template and holds on every machine you use: `model`, `effortLevel`, extra `enabledPlugins` (for example [superpowers](#optional-the-superpowers-workflow)). Permission lists add to the template's; other values replace it. |
+| `settings.json` | Only what differs from the template and holds on every machine you use: `model`, `effortLevel`, extra `enabledPlugins` (for example [superpowers](#optional-the-superpowers-workflow)), `"attribution": { "commit": "", "pr": "" }` to leave Claude's co-author trailer out of commits and pull requests. Permission lists add to the template's; other values replace it. |
 | `CLAUDE.md` | The language Claude should chat in and your personal working rules. |
 | `setup.mjs` | Optional. Installs tools your plugins need (for example a language server). It receives the path to `machine.json`. Delete it if you need nothing. |
 
