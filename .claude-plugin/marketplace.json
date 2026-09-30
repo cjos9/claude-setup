@@ -1,6 +1,9 @@
 {
   "name": "claude-setup",
   "owner": { "name": "claude-setup" },
+  "metadata": {
+    "description": "The flow plugin of claude-setup: guards, a build check before Claude stops, notifications and shipping to pull or merge requests."
+  },
   "plugins": [
     {
       "name": "flow",
