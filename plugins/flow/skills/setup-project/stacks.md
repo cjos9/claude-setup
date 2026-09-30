@@ -30,6 +30,7 @@ Stacks this file does not cover: take build, test and lint commands from the CI 
   ```
 
 - `permissions.allow`: `Bash(dotnet restore *)`, `Bash(dotnet build *)`, `Bash(dotnet test *)`, `Bash(dotnet format *)`, `Bash(dotnet pack *)`, `Bash(dotnet list *)`.
+- Test projects on Microsoft.Testing.Platform (xUnit v3, TUnit, MSTest runner, `UseMicrosoftTestingPlatformRunner`): with the .NET 10 SDK or later, `dotnet test` finds their tests only with `"test": { "runner": "Microsoft.Testing.Platform" }` in `global.json`; before .NET 10 they need `<TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>`. Take the test command from the CI, and run `test` once: a run that finds zero tests is a wrong command, not a green one.
 - Check for these gotchas: central package versions in `Directory.Packages.props`; MinVer or other tag-based versioning; Testcontainers tests that need Docker (on Windows run them with the `wsl` skill); application control (Smart App Control) blocking fresh test DLLs on Windows.
 
 ## Python (uv)

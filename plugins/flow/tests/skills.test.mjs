@@ -46,3 +46,9 @@ test("ship sets a project without flow.json up through setup-project's steps, in
   assert.deepEqual(followed, ["Learn the project", "Write CLAUDE.md", "Write .claude/settings.json and .claude/flow.json", "Ignore local files"]);
   assert.ok(text.includes("chore: set up Claude Code"), "the setup gets its own commit");
 });
+
+test("setup-project's .NET stack warns that Microsoft.Testing.Platform needs its own dotnet test mode", () => {
+  const stacks = fs.readFileSync(path.join(PLUGIN, "skills", "setup-project", "stacks.md"), "utf8");
+  const dotnet = stacks.slice(stacks.indexOf("## .NET"), stacks.indexOf("## Python"));
+  for (const needle of ["Microsoft.Testing.Platform", "global.json", "TestingPlatformDotnetTestSupport"]) assert.ok(dotnet.includes(needle), needle);
+});
